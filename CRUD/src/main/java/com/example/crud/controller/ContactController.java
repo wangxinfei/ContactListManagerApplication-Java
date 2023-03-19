@@ -27,7 +27,7 @@ public class ContactController {
     @Autowired
     ContactRepository contactRepository;
 
-    @GetMapping("/contacts")
+    @GetMapping("/contacts/getAll")
     public ResponseEntity<List<Contact>> getAllContacts(@RequestParam(required = false) String phoneNumber) {
         try {
             List<Contact> contacts = new ArrayList<Contact>();
@@ -47,7 +47,7 @@ public class ContactController {
         }
     }
 
-    @GetMapping("/contacts/{id}")
+    @GetMapping("/contacts/getById/{id}")
     public ResponseEntity<Contact> getContactById(@PathVariable("id") long id) {
         Optional<Contact> contactData = contactRepository.findById(id);
 
@@ -58,20 +58,41 @@ public class ContactController {
         }
     }
 
-    @PostMapping("/contacts")
+    @PostMapping("/contacts/createContact")
     public ResponseEntity<Contact> createContact(@RequestBody Contact contact) {
         try {
+
+            // Check if a contact with the same phone number already exists
+            List<Contact> existingContacts = contactRepository.findByPhoneNumberContaining(contact.getPhoneNumber());
+            if (!existingContacts.isEmpty()) {
+                // A contact with the same phone number already exists, so return an error response
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+
+            // No contact with the same phone number exists, so save the new contact
             Contact _contact = contactRepository
-                    .save(new Contact(contact.getFirstName(), contact.getLastName(), contact.getPhoneNumber(), contact.getEmail(), contact.getAddress(), false));
+                    .save(new Contact(contact.getFirstName(),
+                            contact.getLastName(),
+                            contact.getPhoneNumber(),
+                            contact.getEmail(),
+                            contact.getAddress(),
+                            true));
             return new ResponseEntity<>(_contact, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping("/contacts/{id}")
+    @PutMapping("/contacts/updateContact/{id}")
     public ResponseEntity<Contact> updateContact(@PathVariable("id") long id, @RequestBody Contact contact) {
         Optional<Contact> contactData = contactRepository.findById(id);
+
+        // Check if a contact with the same phone number already exists
+        List<Contact> existingContacts = contactRepository.findByPhoneNumberContaining(contact.getPhoneNumber());
+        if (!existingContacts.isEmpty()) {
+            // A contact with the same phone number already exists, so return an error response
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
 
         if (contactData.isPresent()) {
             Contact _contact = contactData.get();
@@ -80,14 +101,14 @@ public class ContactController {
             _contact.setPhoneNumber(contact.getPhoneNumber());
             _contact.setEmail(contact.getEmail());
             _contact.setAddress(contact.getAddress());
-            _contact.setExist(contact.isExist());
+            _contact.setExist(true);
             return new ResponseEntity<>(contactRepository.save(_contact), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("/contacts/{id}")
+    @DeleteMapping("/contacts/deleteContact/{id}")
     public ResponseEntity<HttpStatus> deleteContact(@PathVariable("id") long id) {
         try {
             contactRepository.deleteById(id);
@@ -97,7 +118,7 @@ public class ContactController {
         }
     }
 
-    @DeleteMapping("/contacts")
+    @DeleteMapping("/contacts/deleteAll")
     public ResponseEntity<HttpStatus> deleteAllContacts() {
         try {
             contactRepository.deleteAll();
@@ -108,7 +129,7 @@ public class ContactController {
 
     }
 
-    @GetMapping("/contacts/published")
+    @GetMapping("/contacts/exist")
     public ResponseEntity<List<Contact>> findByExist() {
         try {
             List<Contact> contacts = contactRepository.findByExist(true);
