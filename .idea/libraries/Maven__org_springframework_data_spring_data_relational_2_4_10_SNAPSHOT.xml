@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.springframework.data:spring-data-relational:2.4.10-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-relational/2.4.10-SNAPSHOT/spring-data-relational-2.4.10-20230318.153103-18.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-relational/2.4.10-SNAPSHOT/spring-data-relational-2.4.10-20230318.153103-18-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-relational/2.4.10-SNAPSHOT/spring-data-relational-2.4.10-20230318.153103-18-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

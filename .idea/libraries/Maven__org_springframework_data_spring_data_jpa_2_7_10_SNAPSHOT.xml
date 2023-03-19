@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.springframework.data:spring-data-jpa:2.7.10-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/2.7.10-SNAPSHOT/spring-data-jpa-2.7.10-20230318.152605-17.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/2.7.10-SNAPSHOT/spring-data-jpa-2.7.10-20230318.152605-17-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/2.7.10-SNAPSHOT/spring-data-jpa-2.7.10-20230318.152605-17-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
