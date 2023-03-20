@@ -25,20 +25,19 @@ public class Contact {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "exist")
-    private boolean exist;
+    /*@Column(name = "exist")
+    private boolean exist;*/
 
     public Contact() {
 
     }
 
-    public Contact(String firstName, String lastName, String phoneNumber, String email, String address, boolean exist) {
+    public Contact(String firstName, String lastName, String phoneNumber, String email, String address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.address = address;
-        this.exist = exist;
     }
 
     public Long getId() {
@@ -80,16 +79,16 @@ public class Contact {
         this.address = address;
     }
 
-    public boolean isExist() {
+    /*public boolean isExist() {
         return exist;
     }
     public void setExist(boolean exist) {
         this.exist = exist;
-    }
+    }*/
 
     @Override
     public String toString() {
-        return "contact [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber=" + phoneNumber + ", email=" + email + ", address=" + address + ", exist=" + exist + "]";
+        return "contact [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber=" + phoneNumber + ", email=" + email + ", address=" + address + "]";
     }
 
 
