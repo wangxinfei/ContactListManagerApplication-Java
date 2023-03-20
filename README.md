@@ -24,3 +24,46 @@ Command in terminal
 Or
 > run main method from `CrudApplication.java` as spring boot application.  
 
+### Postman - API Endpoints
+
+- #### CRUD Operations
+
+    > **POST Mapping** http://localhost:2222/api/contacts/createContact  - Add new Contact 
+    
+     Request Body in JSON
+     ```
+        {
+            "firstName": "Alan",
+            "lastName": "Wang",
+            "phoneNumber": "123-456-7890",
+            "email": "alan.wang@example.com",
+            "address": "1st Avenue"
+        }
+        
+     ```
+     
+    > **GET Mapping** http://localhost:2222/api/contacts/getAll  - Get all Contacts
+    
+    > **GET Mapping** http://localhost:2222/api/contacts/getById/{{id}}  - Get a Contact by ID
+    
+    > **GET Mapping** http://localhost:2222/api/contacts/getByFirstName  - Get Contacts by firstName
+    
+    > **GET Mapping** http://localhost:2222/api/contacts/getByPhoneNumber/{{phoneNumber}}  - Get a Contact by phoneNumber
+       
+    
+    > **PUT Mapping** http://localhost:2222/api/contacts/updateContact/{{id}}  - Update existing Contact by a given ID 
+                                                       
+     Request Body in JSON
+     ```
+        {
+            "firstName": "Betty",
+            "lastName": "Wang",
+            "phoneNumber": "123-456-7890",
+            "email": "betty.wang@example.com",
+            "address": "21st Avenue"
+        }
+     ```
+    
+    > **DELETE Mapping** http://localhost:2222/api/contacts/deleteContact/{{id}}  - Delete Contact by ID
+    
+    > **DELETE Mapping** http://localhost:2222/api/contacts/deleteAll  - Delete all Contacts
