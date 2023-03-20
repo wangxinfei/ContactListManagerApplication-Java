@@ -9,10 +9,17 @@ To enable H2 DB related configuration, the ``` @EnableJpaRepositories ``` annota
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [Maven](https://maven.apache.org/guides/index.html)
 - [H2 Database](https://www.h2database.com/html/main.html)
-- [Lombok](https://objectcomputing.com/resources/publications/sett/january-2010-reducing-boilerplate-code-with-project-lombok)
 
 
 ## Tools
-- Eclipse or IntelliJ IDEA (or any preferred IDE) with embedded Maven
+- IntelliJ IDEA (or any preferred IDE) with embedded Maven
 - Maven (version >= 3.6.0)
 - Postman (or any RESTful API testing tool)
+
+###  Build and Run application
+
+Command in terminal
+> **```mvn spring-boot:run```** it will run application as spring boot application
+> 
+Or
+> run main method from `CRUDApplication.java` as spring boot application.  
