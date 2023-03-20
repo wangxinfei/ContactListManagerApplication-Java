@@ -22,4 +22,5 @@ Command in terminal
 > **```mvn spring-boot:run```** it will run application as spring boot application
 > 
 Or
-> run main method from `CRUDApplication.java` as spring boot application.  
+> run main method from `CrudApplication.java` as spring boot application.  
+
