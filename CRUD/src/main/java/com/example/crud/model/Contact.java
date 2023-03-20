@@ -90,13 +90,5 @@ public class Contact {
     public String toString() {
         return "contact [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber=" + phoneNumber + ", email=" + email + ", address=" + address + "]";
     }
-
-
-
-
-
-
-
-
 }
 
