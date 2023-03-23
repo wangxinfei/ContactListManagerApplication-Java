@@ -3,6 +3,9 @@ package com.example.crud.controller;
 import com.example.crud.model.Contact;
 import com.example.crud.repository.ContactRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,31 +32,27 @@ public class ContactController {
 
 
     /**
-     * Retrieves a list of contacts from the database, optionally filtered by phone number.
+     * Retrieves a list of all contacts from the database, or all contacts containing the provided phone number.
      *
-     * @param phoneNumber the phone number to filter the contacts by
-     * @return a response entity containing a list of contacts and the HTTP status code
+     * @param phoneNumber An optional phone number to search for in the contacts list.
+     * @return A ResponseEntity object containing either the list of contacts, or a NO_CONTENT status if the list is empty.
      */
-    @GetMapping("/contacts/getAll")
-    public ResponseEntity<List<Contact>> getAllContacts(@RequestParam(required = false) String phoneNumber) {
+    @GetMapping("/contacts")
+    public ResponseEntity<List<Contact>> getAllContacts(@RequestParam(required = false) Optional<String> phoneNumber) {
         try {
-            List<Contact> contacts = new ArrayList<Contact>();
+            List<Contact> contacts = new ArrayList<>();
 
             // Retrieves all contacts from the database if no phone number is provided
-            if (phoneNumber == null){
+            if (!phoneNumber.isPresent()) {
                 contactRepository.findAll().forEach(contacts::add);
             } else {
-                contactRepository.findByPhoneNumberContaining(phoneNumber).forEach(contacts::add);
+                contactRepository.findByPhoneNumberContaining(phoneNumber.get()).forEach(contacts::add);
             }
 
             // If the list is empty, return to NO_CONTENT status
-            if (contacts.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(contacts, HttpStatus.OK);
+            return contacts.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(contacts);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -65,14 +64,15 @@ public class ContactController {
      * @return ResponseEntity<Contact> the HTTP response containing the Contact instance if it exists,
      *         or a NOT_FOUND status if it does not exist
      */
-    @GetMapping("/contacts/getById/{id}")
+    @GetMapping("/contacts/{id}")
     public ResponseEntity<Contact> getContactById(@PathVariable("id") long id) {
         Optional<Contact> contactData = contactRepository.findById(id);
 
+        // If the contact exists, return it with a status of OK
         if (contactData.isPresent()) {
             return new ResponseEntity<>(contactData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } else { // If the contact does not exist, return a NOT_FOUND status
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }
 
@@ -82,7 +82,8 @@ public class ContactController {
      *
      * @param firstName The first name to search for in the database
      * @return A ResponseEntity containing the list of matching Contact objects, or an HTTP status NO_CONTENT if none are found
-     * @throws Exception If an error occurs while attempting to access the database
+     * @throws DataAccessException If an error occurs while attempting to access the database,
+     *         or Exception to handle all other exceptions
      */
     @GetMapping("/contacts/getByFirstName")
     public ResponseEntity<List<Contact>> getContactsByFirstName(@RequestParam String firstName) {
@@ -90,12 +91,16 @@ public class ContactController {
             List<Contact> contacts = contactRepository.findByFirstName(firstName);
 
             if (contacts.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return ResponseEntity.noContent().build();
             }
 
-            return new ResponseEntity<>(contacts, HttpStatus.OK);
+            return ResponseEntity.ok(contacts);
+        } catch (DataAccessException e) {
+            // handle database access error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            // handle all other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -109,18 +114,20 @@ public class ContactController {
      *         or an empty ResponseEntity with an HTTP status NO CONTENT if no matches are found,
      *         or a null ResponseEntity with an HTTP status INTERNAL SERVER ERROR if an exception occurs during processing.
      */
-    @GetMapping("/contacts/getByPhoneNumber/{phoneNumber}")
+    @GetMapping("/contacts/{phoneNumber}")
     public ResponseEntity<List<Contact>> getContactsByPhoneNumber(@PathVariable String phoneNumber) {
+        List<Contact> contacts;
+
         try {
-            List<Contact> contacts = contactRepository.findByPhoneNumberContaining(phoneNumber);
-
-            if (contacts.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(contacts, HttpStatus.OK);
+            contacts = contactRepository.findByPhoneNumberContaining(phoneNumber);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        if (contacts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(contacts);
         }
     }
 
@@ -133,7 +140,7 @@ public class ContactController {
      *         if a contact with the same phone number already exists, return to CONFLICT,
      *         returns a response with a null body and a status of INTERNAL_SERVER_ERROR if there is an error.
      */
-    @PostMapping("/contacts/createContact")
+    @PostMapping("/contacts")
     public ResponseEntity<Contact> createContact(@RequestBody Contact contact) {
         try {
             // Check if a contact with the same phone number already exists
@@ -144,14 +151,12 @@ public class ContactController {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
 
-            // No contact with the same phone number exists, so save the new contact
-            Contact _contact = contactRepository
-                    .save(new Contact(contact.getFirstName(),
-                            contact.getLastName(),
-                            contact.getPhoneNumber(),
-                            contact.getEmail(),
-                            contact.getAddress()));
-            return new ResponseEntity<>(_contact, HttpStatus.CREATED);
+            // No contact with the same phone number exists, so save the new contacts
+            return ResponseEntity.status(HttpStatus.CREATED).body(contactRepository.save(contact));
+        } catch (DataAccessException e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -167,21 +172,29 @@ public class ContactController {
      * @param contact the updated contact details to save
      * @return a response entity containing the updated contact if successful, or a NOT_FOUND response if the contact is not found
      */
-    @PutMapping("/contacts/updateContact/{id}")
+    @PutMapping("/contacts/{id}")
     public ResponseEntity<Contact> updateContact(@PathVariable("id") long id, @RequestBody Contact contact) {
-        Optional<Contact> contactData = contactRepository.findById(id);
+        try {
+            Optional<Contact> contactData = contactRepository.findById(id);
 
-        if (contactData.isPresent()) {
-            Contact _contact = contactData.get();
-            _contact.setFirstName(contact.getFirstName());
-            _contact.setLastName(contact.getLastName());
-            _contact.setPhoneNumber(contact.getPhoneNumber());
-            _contact.setEmail(contact.getEmail());
-            _contact.setAddress(contact.getAddress());
+            if (contactData.isPresent()) {
+                Contact _contact = contactData.get();
+                _contact.setFirstName(contact.getFirstName());
+                _contact.setLastName(contact.getLastName());
+                _contact.setPhoneNumber(contact.getPhoneNumber());
+                _contact.setEmail(contact.getEmail());
+                _contact.setAddress(contact.getAddress());
 
-            return new ResponseEntity<>(contactRepository.save(_contact), HttpStatus.OK);
-        } else {
+                return new ResponseEntity<>(contactRepository.save(_contact), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (EmptyResultDataAccessException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -198,10 +211,13 @@ public class ContactController {
         try {
             contactRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (EmptyResultDataAccessException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
     /**
@@ -209,7 +225,7 @@ public class ContactController {
      * @return ResponseEntity with HTTP status NO_CONTENT if all contacts were deleted successfully,
      *         or HTTP status code 500 (INTERNAL_SERVER_ERROR) if an error occurred while deleting the contacts.
      */
-    @DeleteMapping("/contacts/deleteAll")
+    @DeleteMapping("/contacts")
     public ResponseEntity<HttpStatus> deleteAllContacts() {
         try {
             contactRepository.deleteAll();
@@ -217,21 +233,7 @@ public class ContactController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 
-    /*@GetMapping("/contacts/exist")
-    public ResponseEntity<List<Contact>> findByExist() {
-        try {
-            List<Contact> contacts = contactRepository.findByExist(true);
-
-            if (contacts.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-            return new ResponseEntity<>(contacts, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }*/
 
 }
