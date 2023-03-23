@@ -47,6 +47,8 @@ class ContactControllerTest {
         assertEquals(expectedContacts, responseEntity.getBody());
     }
 
+
+
     @Test
     void testGetContactById() {
         // Given

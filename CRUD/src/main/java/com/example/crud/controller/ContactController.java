@@ -38,21 +38,25 @@ public class ContactController {
      * @return A ResponseEntity object containing either the list of contacts, or a NO_CONTENT status if the list is empty.
      */
     @GetMapping("/contacts")
-    public ResponseEntity<List<Contact>> getAllContacts(@RequestParam(required = false) Optional<String> phoneNumber) {
+    public ResponseEntity<List<Contact>> getAllContacts(@RequestParam(required = false) String phoneNumber) {
         try {
-            List<Contact> contacts = new ArrayList<>();
+            List<Contact> contacts = new ArrayList<Contact>();
 
             // Retrieves all contacts from the database if no phone number is provided
-            if (!phoneNumber.isPresent()) {
+            if (phoneNumber == null){
                 contactRepository.findAll().forEach(contacts::add);
             } else {
-                contactRepository.findByPhoneNumberContaining(phoneNumber.get()).forEach(contacts::add);
+                contactRepository.findByPhoneNumberContaining(phoneNumber).forEach(contacts::add);
             }
 
             // If the list is empty, return to NO_CONTENT status
-            return contacts.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(contacts);
+            if (contacts.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(contacts, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
